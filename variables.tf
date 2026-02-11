@@ -37,19 +37,19 @@ EOT
     in_guest_user_patch_mode = optional(string)
     properties               = optional(map(string))
     tags                     = optional(map(string))
-    visibility               = optional(string, "Custom")
+    visibility               = optional(string) # Default: "Custom"
     install_patches = optional(object({
-      linux = optional(object({
+      linux = optional(list(object({
         classifications_to_include    = optional(list(string))
         package_names_mask_to_exclude = optional(list(string))
         package_names_mask_to_include = optional(list(string))
-      }))
+      })))
       reboot = optional(string)
-      windows = optional(object({
+      windows = optional(list(object({
         classifications_to_include = optional(list(string))
         kb_numbers_to_exclude      = optional(list(string))
         kb_numbers_to_include      = optional(list(string))
-      }))
+      })))
     }))
     window = optional(object({
       duration             = optional(string)
@@ -59,5 +59,21 @@ EOT
       time_zone            = string
     }))
   }))
+  validation {
+    condition = alltrue([
+      for k, v in var.maintenance_configurations : (
+        v.install_patches.linux == null || (length(v.install_patches.linux) >= 1)
+      )
+    ])
+    error_message = "Each linux list must contain at least 1 items"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.maintenance_configurations : (
+        v.install_patches.windows == null || (length(v.install_patches.windows) >= 1)
+      )
+    ])
+    error_message = "Each windows list must contain at least 1 items"
+  }
 }
 

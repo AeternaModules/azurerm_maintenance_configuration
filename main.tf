@@ -14,7 +14,7 @@ resource "azurerm_maintenance_configuration" "maintenance_configurations" {
     for_each = each.value.install_patches != null ? [each.value.install_patches] : []
     content {
       dynamic "linux" {
-        for_each = install_patches.value.linux != null ? [install_patches.value.linux] : []
+        for_each = install_patches.value.linux != null ? install_patches.value.linux : []
         content {
           classifications_to_include    = linux.value.classifications_to_include
           package_names_mask_to_exclude = linux.value.package_names_mask_to_exclude
@@ -23,7 +23,7 @@ resource "azurerm_maintenance_configuration" "maintenance_configurations" {
       }
       reboot = install_patches.value.reboot
       dynamic "windows" {
-        for_each = install_patches.value.windows != null ? [install_patches.value.windows] : []
+        for_each = install_patches.value.windows != null ? install_patches.value.windows : []
         content {
           classifications_to_include = windows.value.classifications_to_include
           kb_numbers_to_exclude      = windows.value.kb_numbers_to_exclude
