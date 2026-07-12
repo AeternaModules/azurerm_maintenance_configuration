@@ -1,3 +1,7 @@
+output "maintenance_configurations_id" {
+  description = "Map of id values across all maintenance_configurations, keyed the same as var.maintenance_configurations"
+  value       = { for k, v in azurerm_maintenance_configuration.maintenance_configurations : k => v.id }
+}
 output "maintenance_configurations_in_guest_user_patch_mode" {
   description = "Map of in_guest_user_patch_mode values across all maintenance_configurations, keyed the same as var.maintenance_configurations"
   value       = { for k, v in azurerm_maintenance_configuration.maintenance_configurations : k => v.in_guest_user_patch_mode }
