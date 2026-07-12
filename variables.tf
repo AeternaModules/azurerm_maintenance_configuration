@@ -62,7 +62,7 @@ EOT
   validation {
     condition = alltrue([
       for k, v in var.maintenance_configurations : (
-        v.install_patches.linux == null || (length(v.install_patches.linux) >= 1)
+        v.install_patches == null || (v.install_patches.linux == null || (length(v.install_patches.linux) >= 1))
       )
     ])
     error_message = "Each linux list must contain at least 1 items"
@@ -70,55 +70,18 @@ EOT
   validation {
     condition = alltrue([
       for k, v in var.maintenance_configurations : (
-        v.install_patches.windows == null || (length(v.install_patches.windows) >= 1)
+        v.install_patches == null || (v.install_patches.windows == null || (length(v.install_patches.windows) >= 1))
       )
     ])
     error_message = "Each windows list must contain at least 1 items"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        length(v.name) > 0
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.window == null || (v.window.duration == null || (can(regex("^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$", v.window.duration))))
-      )
-    ])
-    error_message = "duration must match the format HH:mm"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.window == null || (v.window.recur_every == null || (length(v.window.recur_every) > 0))
-      )
-    ])
-    error_message = "must not be empty"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.in_guest_user_patch_mode == null || (contains(["Platform", "User"], v.in_guest_user_patch_mode))
-      )
-    ])
-    error_message = "must be one of: Platform, User"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.properties == null || (length(v.properties) > 0)
-      )
-    ])
-    error_message = "must not be empty"
   }
   # --- Unconfirmed validation candidates, derived from azurerm_maintenance_configuration's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
   # Review, translate into a real validation{} block above, and delete once confirmed.
+  # path: name
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: location
   #   source:    location.EnhancedValidate: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
   # path: resource_group_name
@@ -139,8 +102,14 @@ EOT
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
   # path: visibility
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: window.duration
+  #   condition: can(regex("^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$", value))
+  #   message:   duration must match the format HH:mm
   # path: window.time_zone
   #   source:    validate.MaintenanceTimeZone: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  # path: window.recur_every
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: install_patches.linux.classifications_to_include[*]
   #   condition: contains(["Critical", "Security", "Other"], value)
   #   message:   must be one of: Critical, Security, Other
@@ -149,6 +118,12 @@ EOT
   #   message:   must be one of: Critical, Security, UpdateRollup, FeaturePack, ServicePack, Definition, Tools, Updates
   # path: install_patches.reboot
   #   source:    validation.StringInSlice value list is not a literal []string - likely a generated PossibleValuesFor*() helper; resolve separately
+  # path: in_guest_user_patch_mode
+  #   condition: contains(["Platform", "User"], value)
+  #   message:   must be one of: Platform, User
+  # path: properties[*]
+  #   condition: length(value) > 0
+  #   message:   must not be empty
   # path: tags
   #   condition: length(value) <= 50
   #   message:   [from tags.Validate: invalid when len(value) > 50]
