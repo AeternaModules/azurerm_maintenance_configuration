@@ -37,7 +37,7 @@ EOT
     in_guest_user_patch_mode = optional(string)
     properties               = optional(map(string))
     tags                     = optional(map(string))
-    visibility               = optional(string) # Default: "Custom"
+    visibility               = optional(string)
     install_patches = optional(object({
       linux = optional(list(object({
         classifications_to_include    = optional(list(string))
@@ -59,22 +59,6 @@ EOT
       time_zone            = string
     }))
   }))
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.install_patches == null || (v.install_patches.linux == null || (length(v.install_patches.linux) >= 1))
-      )
-    ])
-    error_message = "Each linux list must contain at least 1 items"
-  }
-  validation {
-    condition = alltrue([
-      for k, v in var.maintenance_configurations : (
-        v.install_patches == null || (v.install_patches.windows == null || (length(v.install_patches.windows) >= 1))
-      )
-    ])
-    error_message = "Each windows list must contain at least 1 items"
-  }
   # --- Unconfirmed validation candidates, derived from azurerm_maintenance_configuration's provider source ---
   # Not auto-enabled: either a bespoke provider validator we can't safely translate,
   # or a path that crosses a list-typed block (needs its own for_each wrapping).
